@@ -30,6 +30,7 @@ cd /root && curl -sSL https://raw.githubusercontent.com/Allenvip1/G-C-D-N/main/c
 
 ## 注意
 
-- `cfst` 测速程序与 `ip.txt` / `ipv6.txt` 仍从 `rwkgyg/CFwarp` 仓库下载，可自行替换为 [XIU2/CloudflareSpeedTest](https://github.com/XIU2/CloudflareSpeedTest/releases) 官方版本。
+- `cfst` 测速程序与 `ip.txt` / `ipv6.txt` 已改为从 [XIU2/CloudflareSpeedTest](https://github.com/XIU2/CloudflareSpeedTest/releases) 官方发布包（当前固定 v2.3.5）下载。需要路由器能访问 GitHub。升级版本时修改 `cdnopw.sh` 中 `cfstget` 函数的 `cfstver`。
+- 反代 IP 模式仍使用原作者的 `cf.yg-kkk.gq` 与 `zip.baipiao.eu.org` 的 IP 库。
 - 需要填写 Cloudflare 邮箱与 Global API Key，会明文保存在路由器 `/root/cfipopw/cdnip.sh` 中，请勿提交到仓库。
 - 「多个 IP 解析到一个域名」模式会先删除该子域名下已有的 A/AAAA 记录，请先用测试域名验证。

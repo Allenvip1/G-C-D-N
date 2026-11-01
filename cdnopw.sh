@@ -74,6 +74,19 @@ else
 echo "2：无IPV6网络，请不要选择"
 fi
 }
+cfstget(){
+# 从 XIU2/CloudflareSpeedTest 官方发布包中取出指定文件（cfst / ip.txt / ipv6.txt）
+cfstver=v2.3.5
+cpuo=$cpu
+[ "$cpuo" == "arm" ] && cpuo=armv7
+cfsttmp=$(mktemp -d 2>/dev/null || echo /tmp/cfst_dl)
+mkdir -p "$cfsttmp"
+curl -L -# --retry 2 -o "$cfsttmp/cfst.tar.gz" "https://github.com/XIU2/CloudflareSpeedTest/releases/download/$cfstver/cfst_linux_$cpuo.tar.gz"
+tar -xzf "$cfsttmp/cfst.tar.gz" -C "$cfsttmp" > /dev/null 2>&1
+cfstsrc=$(find "$cfsttmp" -type f -name "$1" | head -n 1)
+[ -n "$cfstsrc" ] && cp -f "$cfstsrc" "./$1"
+rm -rf "$cfsttmp"
+}
 cdnv4v6(){
 echo
 echo "1：优选IPV4"
@@ -81,12 +94,12 @@ ipv6test
 read -p "请选择(回车默认为IPV4): " menu
 if [ -z $menu ] || [ "$menu" == "1" ]; then
 rm -rf ipv6.txt
-curl -s -O https://gitlab.com/rwkgyg/CFwarp/-/raw/main/point/cpu3/ip.txt
+cfstget ip.txt
 IP_ADDR=ipv4
 elif [ "$menu" == "2" ]; then
 if [[ -n $v6 ]]; then
 rm -rf ip.txt
-curl -s -O https://gitlab.com/rwkgyg/CFwarp/-/raw/main/point/cpu3/ipv6.txt
+cfstget ipv6.txt
 IP_ADDR=ipv6
 else
 echo "无IPV6网络" && cdnv4v6
@@ -213,7 +226,7 @@ cd cfipopw
 curl -sSL https://raw.githubusercontent.com/Allenvip1/G-C-D-N/main/cdnip.sh -o cdnip.sh
 curl -sSL https://raw.githubusercontent.com/Allenvip1/G-C-D-N/main/cdnac.sh -o cdnac.sh
 if [ ! -f cfst ]; then
-curl -L -o cfst -# --retry 2 https://gitlab.com/rwkgyg/CFwarp/-/raw/main/point/cpu3/$cpu
+cfstget cfst
 chmod +x cfst
 fi
 if [ ! -f cfst ] || [ ! -f cdnip.sh ] || [ ! -f cdnac.sh ]; then
