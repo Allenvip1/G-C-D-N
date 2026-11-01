@@ -155,7 +155,7 @@ awk -F, "NR<=$new_num" /root/cfipopw/result.csv > /root/cfipopw/new_result.csv
 mv /root/cfipopw/new_result.csv /root/cfipopw/result.csv
 fi
 if [[ $(awk -F ',' 'NR==12 {print $1}' /root/cfipopw/result.csv) ]]; then
-awk -F ',' 'NR>1 && NR<=11 {print $1}' /root/cfipopw/result.csv > /root/cfipopw/new_result.csv
+awk 'NR<=11' /root/cfipopw/result.csv > /root/cfipopw/new_result.csv
 mv /root/cfipopw/new_result.csv /root/cfipopw/result.csv
 fi
 sed -i '/api.cloudflare.com/d' /etc/hosts
@@ -178,6 +178,10 @@ else
 		echo "请稍等$sleepTime秒";
 		sleep $sleepTime;
 fi
+
+ipstat(){
+awk -F, -v ip="$1" 'NR>1 && $1==ip {s=($6+0>0)?$6" MB/s":"未测速"; printf "延迟 %s ms | 下载 %s", $5, s; exit}' /root/cfipopw/result.csv
+}
 
 ymonly(){
 echo "正在更新解析：多个优选IP解析到一个域名。请稍后...";
@@ -222,8 +226,8 @@ if [[ -f $csv_file ]]; then
         }'
         response=$(curl -s -X POST "$url" -H "X-Auth-Email: $x_email" -H "X-Auth-Key: $api_key" -H "Content-Type: application/json" -d "$data")
         if [[ $(echo "$response" | jq -r '.success') == "true" ]]; then
-            echo "IP地址 $ip 成功解析到 ${subdomain}.${domain}"
-            echo "IP地址 $ip 成功解析到 ${subdomain}.${domain}" >> informlog
+            echo "$ip | $(ipstat "$ip")"
+            echo "$ip | $(ipstat "$ip")" >> informlog
         else
             echo "导入IP地址 $ip 失败"
             echo "导入IP地址 $ip 失败" >> informlog
@@ -268,7 +272,7 @@ while [[ ${x} -lt $num ]]; do
     fi
 
     if [[ $resSuccess = "true" ]]; then
-        echo "$CDNhostname更新成功";
+        echo "$ipAddr | $(ipstat "$ipAddr") → $CDNhostname";
     else
         echo "$CDNhostname更新失败";
     fi
@@ -285,7 +289,9 @@ ym
 fi
 else
 echo "优选IP排名如下" > informlog
-awk -F ',' 'NR > 1 {print $1}' result.csv >> informlog
+for ip in $(awk -F ',' 'NR > 1 {print $1}' result.csv); do
+echo "$ip | $(ipstat "$ip")" >> informlog
+done
 fi
 bash cdnac.sh
 pushmessage=$(cat informlog);
