@@ -258,16 +258,28 @@ echo "1：Cloudflare CDN官方IP（强烈推荐！支持IPV4与IPV6）"
 echo "2：Cloudflare CDN反代IP（仅支持ipv4）"
 read -p "请选择(回车默认为官方IP): " menu
 if [ -z $menu ] || [ "$menu" == "1" ]; then
+rm -f txt.zip
+proxymode=0
 cdnv4v6
 else
 rm -rf ipv6.txt
 touch txt.zip
+proxymode=1
 IP_ADDR=ipv4
 fi
 sleep 1
+if [ "$proxymode" == "1" ]; then
+point=443
+CFST_URL="speed.cloudflare.com/__down?bytes=50000000"
+CFST_URL_R="-url https://$CFST_URL"
+sed -i '29s/^CFST_SPD=.*/CFST_SPD=""/' /root/cfipopw/cdnip.sh
+echo
+echo "反代IP模式：自动使用443端口，直接测延迟与下载速度，无需选择端口和测速"
+else
 cdnport
 sleep 1
 cdnspedurl
+fi
 sleep 1
 echo
 read -p "请输入测试线程数量【不懂就回车，默认200 最多1000】: " menu
@@ -437,6 +449,10 @@ else
 rm -rf ipv6.txt
 touch txt.zip
 IP_ADDR=ipv4
+sed -i '3s/^point=.*/point=443/' /root/cfipopw/cdnip.sh
+sed -i '12s#^CFST_URL_R=.*#CFST_URL_R="-url https://speed.cloudflare.com/__down?bytes=50000000"#' /root/cfipopw/cdnip.sh
+sed -i '29s/^CFST_SPD=.*/CFST_SPD=""/' /root/cfipopw/cdnip.sh
+echo "已切换为反代IP模式：自动使用443端口并开启测速" && sleep 2
 fi
 sed -i "4s/$oldport/$IP_ADDR/" /root/cfipopw/cdnip.sh
 changeinstall
@@ -463,6 +479,10 @@ else
 cdnv4v6
 fi
 sed -i "4s/$oldport/$IP_ADDR/" /root/cfipopw/cdnip.sh
+changeinstall
+elif [ "$menu" == "5" ] && [ -f /root/cfipopw/txt.zip ]; then
+echo
+echo "当前为CDN反代IP模式，固定使用443端口，不支持更换端口" && sleep 2
 changeinstall
 elif [ "$menu" == "5" ]; then
 echo
