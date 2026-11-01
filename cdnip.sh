@@ -70,6 +70,14 @@ else
 fi
 }
 
+restartproxy(){
+if [ "$pause" != "false" ] ; then
+/etc/init.d/$CLIEN restart
+echo "已重启$CLIEN，请稍等$sleepTime秒"
+sleep $sleepTime
+fi
+}
+
 cd /root/cfipopw/ && rm -rf informlog && bash cdnac.sh
 if [ "$ymorip" == "1" ]; then
 sed -i '/api.cloudflare.com/d' /etc/hosts
@@ -134,8 +142,9 @@ else
 echo "已停止$CLIEN";
 fi
 
+rm -f /root/cfipopw/result.csv
 if [ "$IP_ADDR" = "ipv6" ] ; then
-    ./cfst -tp $point $CFST_URL_R -t $CFST_T -n $CFST_N -dn $CFST_DN -p $CFST_DN -tl $CFST_TL -tll $CFST_TLL -sl $CFST_SL -f ipv6.txt $CFST_SPD -dt 8
+    ./cfst-tp $point $CFST_URL_R -t $CFST_T -n $CFST_N -dn $CFST_DN -p $CFST_DN -tl $CFST_TL -tll $CFST_TLL -sl $CFST_SL -f ipv6.txt $CFST_SPD -dt 8
     else
     ./cfst -tp $point $CFST_URL_R -t $CFST_T -n $CFST_N -dn $CFST_DN -p $CFST_DN -tl $CFST_TL -tll $CFST_TLL -sl $CFST_SL $CFST_SPD -dt 8
 fi
@@ -144,6 +153,7 @@ if [ -f "/root/cfipopw/result.csv" ]; then
 second_line=$(sed -n '2p' /root/cfipopw/result.csv | tr -d '[:space:]')
 if [ -z "$second_line" ]; then
 echo "优选IP失败，请尝试更换端口或者重新执行一次" && sleep 3
+restartproxy
 pushmessage="优选IP失败，请尝试更换端口或者重新执行一次"
 tgaction
 exit
@@ -163,6 +173,7 @@ sed -i '/api.cloudflare.com/d' /etc/hosts
 #echo "$goodip api.cloudflare.com" >> /etc/hosts
 else
 echo "优选IP中断，未生成result.csv文件，请尝试更换端口或者重新执行一次" && sleep 3
+restartproxy
 pushmessage="优选IP中断，未生成result.csv文件，请尝试更换端口或者重新执行一次"
 tgaction
 exit
@@ -180,9 +191,8 @@ else
 fi
 
 ipstat(){
-awk -F, -v ip="$1" 'NR>1 && $1==ip {s=($6+0>0)?$6" MB/s":"未测速"; printf "延迟 %s ms | 下载 %s", $5, s; exit}' /root/cfipopw/result.csv
+awk -F, -v ip="$1" -v dd="$CFST_SPD" 'NR>1 && $1==ip {s=($6+0>0)?$6" MB/s":((dd=="-dd")?"未测速":"下载失败"); printf "延迟 %s ms | 下载 %s", $5, s; exit}' /root/cfipopw/result.csv
 }
-
 ymonly(){
 echo "正在更新解析：多个优选IP解析到一个域名。请稍后...";
 url="https://api.cloudflare.com/client/v4/zones/$zone_id/dns_records"
