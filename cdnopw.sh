@@ -128,7 +128,7 @@ elif [ "$menu" == "1" ];then
 echo "是否使用其他测速地址？（可直接输入其他测速地址 【 注意，不要带http(s):// 】 ，回车使用默认测速地址）"
 read -p "请输入: " menu
 if [ -z $menu ]; then
-CFST_URL="е.eu.org/500.zip"
+CFST_URL="speed.cloudflare.com/__down?bytes=50000000"
 else
 CFST_URL="$menu"
 fi
@@ -364,7 +364,7 @@ elif [ "$menu" == "1" ];then
 echo "是否使用其他测速地址？（可直接输入其他测速地址 【 不要带http(s):// 】 ，回车使用默认测速地址）"
 read -p "请输入: " menu
 if [ -z $menu ]; then
-CFST_URL="е.eu.org/500.zip"
+CFST_URL="speed.cloudflare.com/__down?bytes=50000000"
 else
 CFST_URL="$menu"
 fi
@@ -379,7 +379,7 @@ echo
 echo "是否使用其他测速地址？（可直接输入其他测速地址 【 不要带http(s):// 】 ，回车使用默认测速地址）"
 read -p "请输入: " menu
 if [ -z $menu ]; then
-CFST_URL="е.eu.org/500.zip"
+CFST_URL="speed.cloudflare.com/__down?bytes=50000000"
 else
 CFST_URL="$menu"
 fi
