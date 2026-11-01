@@ -261,8 +261,7 @@ if [ -z $menu ] || [ "$menu" == "1" ]; then
 cdnv4v6
 else
 rm -rf ipv6.txt
-curl -Ls https://cf.yg-kkk.gq -o txt.zip
-unzip -o txt.zip -d txt > /dev/null 2>&1
+touch txt.zip
 IP_ADDR=ipv4
 fi
 sleep 1
@@ -436,8 +435,7 @@ rm -rf txt.zip
 cdnv4v6
 else
 rm -rf ipv6.txt
-curl -Ls https://cf.yg-kkk.gq -o txt.zip
-unzip -o txt.zip -d txt > /dev/null 2>&1
+touch txt.zip
 IP_ADDR=ipv4
 fi
 sed -i "4s/$oldport/$IP_ADDR/" /root/cfipopw/cdnip.sh

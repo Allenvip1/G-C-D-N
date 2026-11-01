@@ -31,30 +31,17 @@ echo
 cat cdnIP.csv >> informlog
 fi
 if [[ -f /root/cfipopw/txt.zip && ! -f /root/cfipopw/informlog ]]; then
-echo "下载更新反代IP库txt.zip文件……"
-wget -q https://zip.baipiao.eu.org -O txt.zip
-if [ $? -eq 0 ]; then
-echo "下载成功"
+echo "下载更新反代IP库（来源：ymyuuu/IPDB）……"
+curl -sL -m30 --retry 2 "https://ipdb.api.030101.xyz/?type=bestproxy;proxy" | tr -d '\r' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | awk '!s[$0]++' > ip.new
+if [ -s ip.new ]; then
+mv -f ip.new ip.txt
+echo "下载成功，共$(wc -l < ip.txt)个反代IP"
 else
-curl -L -# --retry 2 https://cf.yg-kkk.gq -o txt.zip
-if [ $? -eq 0 ]; then
-echo "下载成功"
-else
+rm -f ip.new
+if [ -s ip.txt ]; then
 echo "下载失败，继续使用之前的反代IP库"
-fi
-fi
-rm -rf txt
-unzip -o txt.zip -d txt > /dev/null 2>&1
-if [[ ! -e "txt" ]]; then
-echo "反代IP库txt.zip文件下载失败" && exit
-fi
-point=$(sed -n '3s/.*=//p' /root/cfipopw/cdnip.sh)
-if [ "$point" == "443" ]; then
-find txt -type f -name "*443*" ! -name "*8443*" -exec cat {} \; > ip.txt
-elif [ "$point" == "80" ]; then
-find txt -type f -name "*80*" ! -name "*8880*" ! -name "*8080*" -exec cat {} \; > ip.txt
 else
-find txt -type f -name "*${point}*"  -exec cat {} \; > ip.txt
+echo "反代IP库下载失败" && exit
 fi
-grep -E '^8|^47|^43|^130|^132|^152|^193|^140|^138|^150|^143|^141|^155|^168|^124|^170|^119' ip.txt > pass.txt && mv pass.txt ip.txt
+fi
 fi
