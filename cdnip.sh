@@ -193,6 +193,9 @@ fi
 ipstat(){
 awk -F, -v ip="$1" -v dd="$CFST_SPD" 'NR>1 && $1==ip {s=($6+0>0)?$6" MB/s":((dd=="-dd")?"未测速":"下载失败"); printf "延迟 %s ms | 下载 %s", $5, s; exit}' /root/cfipopw/result.csv
 }
+# 多个IP解析到一个域名时，只把排名前 DNS_TOP 个写入解析，其余仅在推送中显示排名
+DNS_TOP=7
+
 ymonly(){
 echo "正在更新解析：多个优选IP解析到一个域名。请稍后...";
 url="https://api.cloudflare.com/client/v4/zones/$zone_id/dns_records"
@@ -220,7 +223,13 @@ fi
 csv_file='result.csv'
 if [[ -f $csv_file ]]; then
     ips=$(awk -F ',' 'NR > 1 {print $1}' "$csv_file")
+    n=0
     for ip in $ips; do
+        n=$((n + 1))
+        if [ "$n" -gt "$DNS_TOP" ]; then
+            echo "$ip | $(ipstat "$ip") | 未解析" >> informlog
+            continue
+        fi
         url="https://api.cloudflare.com/client/v4/zones/$zone_id/dns_records"
         if [[ "$ip" =~ ":" ]]; then
             record_type="AAAA"
